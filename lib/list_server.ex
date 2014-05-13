@@ -3,8 +3,8 @@ defmodule ListServer do
 
   ### Public API
 
-  def start_link do
-    :gen_server.start_link {:local, :my_list_server}, __MODULE__, [], []
+  def start_link(list_data_pid) do
+    :gen_server.start_link {:local, :my_list_server}, __MODULE__, list_data_pid, []
   end
 
   def clear do
@@ -29,27 +29,31 @@ defmodule ListServer do
 
   ### GenServer API
 
-  def init(list) do
-    {:ok, list}
+  def init(list_data_pid) do
+    {:ok, {ListData.get_state(list_data_pid), list_data_pid}}
   end
 
-  def handle_cast(:clear, _list) do
-    {:noreply, []}
+  def handle_cast(:clear, {_list, list_data_pid}) do
+    {:noreply, {[], list_data_pid}}
   end
 
-  def handle_cast({:add_item, item}, list) do
-    {:noreply, list ++ [item]}
+  def handle_cast({:add_item, item}, {list, list_data_pid}) do
+    {:noreply, {list ++ [item], list_data_pid}}
   end
 
-  def handle_cast({:remove_item, item}, list) do
-    {:noreply, List.delete(list, item)}
+  def handle_cast({:remove_item, item}, {list, list_data_pid}) do
+    {:noreply, {List.delete(list, item), list_data_pid}}
   end
 
-  def handle_cast(:provoke_crash, _list) do
+  def handle_cast(:provoke_crash, _state) do
     1 = 2
   end
 
-  def handle_call(:items, _from, list) do
-    {:reply, list, list}
+  def handle_call(:items, _from, {list, list_data_pid}) do
+    {:reply, list, {list, list_data_pid}}
+  end
+
+  def terminate(_reason, {list, list_data_pid}) do
+    ListData.save_state list_data_pid, list
   end
 end
