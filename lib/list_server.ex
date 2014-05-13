@@ -21,7 +21,7 @@ defmodule ListServer do
     {:ok, list}
   end
 
-  def handle_cast(:clear, list) do
+  def handle_cast(:clear, _list) do
     {:noreply, []}
   end
 
