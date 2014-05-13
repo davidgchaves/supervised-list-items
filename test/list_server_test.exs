@@ -16,4 +16,13 @@ defmodule ListServerTest do
     ListServer.add "a book"
     assert ListServer.items == ["a book"]
   end
+
+  test "it removes items from the list" do
+    ListServer.start_link
+    ListServer.add "a book!"
+    ListServer.add "a movie!"
+
+    ListServer.remove "a book!"
+    assert ListServer.items == ["a movie!"]
+  end
 end

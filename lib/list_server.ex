@@ -15,6 +15,10 @@ defmodule ListServer do
     :gen_server.cast :my_list_server, {:add_item, item}
   end
 
+  def remove(item) do
+    :gen_server.cast :my_list_server, {:remove_item, item}
+  end
+
   def items do
     :gen_server.call :my_list_server, :items
   end
@@ -31,6 +35,10 @@ defmodule ListServer do
 
   def handle_cast({:add_item, item}, list) do
     {:noreply, list ++ [item]}
+  end
+
+  def handle_cast({:remove_item, item}, list) do
+    {:noreply, List.delete(list, item)}
   end
 
   def handle_call(:items, _from, list) do
